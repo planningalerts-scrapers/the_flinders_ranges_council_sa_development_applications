@@ -117,7 +117,7 @@ function intersectRectangles(rectangle1: Rectangle, rectangle2: Rectangle): Rect
 
 // Finds the intersection point of two lines.
 
-function intersectLines(line1: Line, line2: Line) : Point {
+function intersectLines(line1: Line, line2: Line, onlyWithinLineSegments: boolean = true) : Point {
     if ((line1.x1 === line1.x2 && line1.y1 === line1.y2) || (line2.x1 === line2.x2 && line2.y1 === line2.y2))
         return undefined;  // ignore zero length lines
   
@@ -127,8 +127,9 @@ function intersectLines(line1: Line, line2: Line) : Point {
   
     let distance1 = ((line2.x2 - line2.x1) * (line1.y1 - line2.y1) - (line2.y2 - line2.y1) * (line1.x1 - line2.x1)) / denominator;
     let distance2 = ((line1.x2 - line1.x1) * (line1.y1 - line2.y1) - (line1.y2 - line1.y1) * (line1.x1 - line2.x1)) / denominator;  
-    if (distance1 < 0 || distance1 > 1 || distance2 < 0 || distance2 > 1)  // check that the intersection is within the line segements
-        return undefined;
+    if (onlyWithinLineSegments)
+        if (distance1 < 0 || distance1 > 1 || distance2 < 0 || distance2 > 1)  // check that the intersection is within the line segements
+            return undefined;
   
     let x = line1.x1 + distance1 * (line1.x2 - line1.x1);
     let y = line1.y1 + distance1 * (line1.y2 - line1.y1);  
@@ -286,7 +287,8 @@ async function parseCells(page) {
         for (let horizontalLine of horizontalLines) {
             let point = intersectLines(
                 { x1: horizontalLine.x, y1: horizontalLine.y, x2: horizontalLine.x + horizontalLine.width, y2: horizontalLine.y },
-                { x1: verticalLine.x, y1: verticalLine.y, x2: verticalLine.x, y2: verticalLine.y + verticalLine.height });
+                { x1: verticalLine.x, y1: verticalLine.y, x2: verticalLine.x, y2: verticalLine.y + verticalLine.height },
+                false);  // extend the lines to infinity so that any gaps in the lines in the grid are "filled in"
             if (point !== undefined && !points.some(otherPoint => (point.x - otherPoint.x) ** 2 + (point.y - otherPoint.y) ** 2 < Tolerance ** 2))
                 points.push(point);  // add the intersection point
         }
@@ -521,7 +523,7 @@ async function parsePdf(url: string) {
 
             let receivedDate = moment.invalid();
             if (receivedDateCell !== undefined && receivedDateCell.elements.length > 0)
-                receivedDate = moment(receivedDateCell.elements.map(element => element.text).join("").replace(/\s\s+/g, " ").trim(), "D/MM/YYYY", true);
+                receivedDate = moment(receivedDateCell.elements.map(element => element.text).join("").replace(/\s\s+/g, " ").trim(), [ "D-MM-YY", "D/MM/YYYY" ], true);
 
             developmentApplications.push({
                 applicationNumber: applicationNumber,
