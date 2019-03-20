@@ -405,7 +405,7 @@ async function parsePdf(url: string) {
             }
         }
 
-        // Sort the elements by approximate Y co-ordinate and then by X co-ordinate.
+        // Sort the cells by approximate Y co-ordinate and then by X co-ordinate.
 
         let cellComparer = (a, b) => (Math.abs(a.y - b.y) < Tolerance) ? ((a.x > b.x) ? 1 : ((a.x < b.x) ? -1 : 0)) : ((a.y > b.y) ? 1 : -1);
         cells.sort(cellComparer);
