@@ -513,6 +513,11 @@ async function parsePdf(url: string) {
                 continue;
             }
 
+            if (address === "#REF!") {  // an address must be present
+                console.log(`Ignoring the development application "${applicationNumber}" because the address is the text "#REF!".`);
+                continue;
+            }
+
             // Construct the description.
 
             let description = "";
@@ -602,14 +607,14 @@ async function main() {
         return;
     }
 
-    console.log(`Found ${pdfUrls.length} PDF file(s).  Selecting three to parse.`);
+    console.log(`Found ${pdfUrls.length + archivedPdfUrls.length} PDF file(s).  Selecting three to parse.`);
 
     // Select the most recent PDF.  And randomly select one other PDF from the current PDFs and
     // one other PDF from the archived PDFs (avoid processing all PDFs once because this may use
     // too much memory, resulting in morph.io terminating the current process).
 
     let selectedPdfUrls: string[] = [];
-    selectedPdfUrls.push(pdfUrls.pop());
+    selectedPdfUrls.push(pdfUrls.shift());
     if (pdfUrls.length > 0)
         selectedPdfUrls.push(pdfUrls[getRandom(0, pdfUrls.length)]);
     if (getRandom(0, 2) === 0)
