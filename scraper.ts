@@ -559,7 +559,7 @@ async function main() {
 
     let database = await initializeDatabase();
 
-    // Read the main page of development applications.
+    // Read the main page of development application register PDFs.
 
     console.log(`Retrieving page: ${DevelopmentApplicationsUrl}`);
 
@@ -575,18 +575,38 @@ async function main() {
                 pdfUrls.push(pdfUrl);
     }
 
-    // Always parse the most recent PDF file and randomly select one other PDF file to parse.
+    // Find all archived development register PDFs.
+
+    let archivedPdfUrls: string[] = [];
+    let archivedPageRelativeUrl = $("a[title='Archived Development Registers']").attr("href");
+    if (archivedPageRelativeUrl !== undefined) {
+        let archivedPageUrl = new urlparser.URL(archivedPageRelativeUrl, DevelopmentApplicationsUrl).href;
+
+        console.log(`Retrieving archived page: ${archivedPageUrl}`);
+        body = await request({ url: archivedPageUrl, rejectUnauthorized: false, proxy: process.env.MORPH_PROXY });
+        await sleep(2000 + getRandom(0, 5) * 1000);
+        $ = cheerio.load(body);
+        
+        for (let element of $("td.u6ListTD div.u6ListItem a").get()) {
+            let pdfUrl = new urlparser.URL(element.attribs.href, DevelopmentApplicationsUrl).href;
+            if (pdfUrl.toLowerCase().includes(".pdf"))
+                if (!archivedPdfUrls.some(url => url === pdfUrl))  // avoid duplicates
+                    archivedPdfUrls.push(pdfUrl);
+        }
+    }
+
+    // Always parse the most recent PDF file and randomly select two other PDF files to parse.
 
     if (pdfUrls.length === 0) {
         console.log("No PDF URLs were found on the page.");
         return;
     }
 
-    console.log(`Found ${pdfUrls.length} PDF file(s).  Selecting two to parse.`);
+    console.log(`Found ${pdfUrls.length} PDF file(s).  Selecting three to parse.`);
 
-    // Select the most recent PDF.  And randomly select one other PDF (avoid processing all PDFs
-    // at once because this may use too much memory, resulting in morph.io terminating the current
-    // process).
+    // Select the most recent PDF.  And randomly select one other PDF from the current PDFs and
+    // one other PDF from the archived PDFs (avoid processing all PDFs once because this may use
+    // too much memory, resulting in morph.io terminating the current process).
 
     let selectedPdfUrls: string[] = [];
     selectedPdfUrls.push(pdfUrls.pop());
@@ -594,6 +614,8 @@ async function main() {
         selectedPdfUrls.push(pdfUrls[getRandom(0, pdfUrls.length)]);
     if (getRandom(0, 2) === 0)
         selectedPdfUrls.reverse();
+    if (archivedPdfUrls.length > 0)
+        selectedPdfUrls.push(archivedPdfUrls[getRandom(0, archivedPdfUrls.length)]);
 
     for (let pdfUrl of selectedPdfUrls) {
         console.log(`Parsing document: ${pdfUrl}`);
