@@ -503,11 +503,6 @@ async function parsePdf(url: string) {
 
             let address = addressCell.elements.map(element => element.text).join(" ").replace(/\s\s+/g, " ").trim();
 
-            if (address === "") {
-                console.log(`Ignoring the development application "${applicationNumber}" because it has no address.`);
-                continue;
-            } 
-
             if (address === "") {  // an address must be present
                 console.log(`Ignoring the development application "${applicationNumber}" because the address is blank.`);
                 continue;
