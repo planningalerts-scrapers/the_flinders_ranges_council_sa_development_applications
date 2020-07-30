@@ -17,7 +17,7 @@ import didYouMean, * as didyoumean from "didyoumean2";
 
 sqlite3.verbose();
 
-const DevelopmentApplicationsUrl = "https://www.frc.sa.gov.au/development_register";
+const DevelopmentApplicationsUrl = "https://www.frc.sa.gov.au/development-and-health/development_register";
 const CommentUrl = "mailto:council@frc.sa.gov.au";
 
 declare const process: any;
@@ -782,9 +782,8 @@ async function main() {
     let pdfUrls: string[] = [];
     for (let element of $("td.u6ListTD div.u6ListItem a").get()) {
         let pdfUrl = new urlparser.URL(element.attribs.href, DevelopmentApplicationsUrl).href;
-        if (pdfUrl.toLowerCase().includes(".pdf"))
-            if (!pdfUrls.some(url => url === pdfUrl))  // avoid duplicates
-                pdfUrls.push(pdfUrl);
+        if (!pdfUrls.some(url => url === pdfUrl))  // avoid duplicates
+            pdfUrls.push(pdfUrl);
     }
 
     // Find all archived development register PDFs.
@@ -800,10 +799,9 @@ async function main() {
         $ = cheerio.load(body);
         
         for (let element of $("td.u6ListTD div.u6ListItem a").get()) {
-            let pdfUrl = new urlparser.URL(element.attribs.href, DevelopmentApplicationsUrl).href;
-            if (pdfUrl.toLowerCase().includes(".pdf"))
-                if (!archivedPdfUrls.some(url => url === pdfUrl))  // avoid duplicates
-                    archivedPdfUrls.push(pdfUrl);
+            let pdfUrl = new urlparser.URL(element.attribs.href, archivedPageUrl).href;
+            if (!archivedPdfUrls.some(url => url === pdfUrl))  // avoid duplicates
+                archivedPdfUrls.push(pdfUrl);
         }
     }
 
