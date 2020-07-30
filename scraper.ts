@@ -17,7 +17,7 @@ import didYouMean, * as didyoumean from "didyoumean2";
 
 sqlite3.verbose();
 
-const DevelopmentApplicationsUrl = "https://www.frc.sa.gov.au/development_register";
+const DevelopmentApplicationsUrl = "https://www.frc.sa.gov.au/development-and-health/development_register";
 const CommentUrl = "mailto:council@frc.sa.gov.au";
 
 declare const process: any;
